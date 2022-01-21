@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjpowernode.dao.UserDao">
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into t_user values(#{id},#{username},#{password},#{salt})
+    </insert>
+
+    <select id="findByUsername" resultType="com.bjpowernode.entity.User">
+        select id,username,password,salt from t_user where username=#{username}
+    </select>
+
+    <resultMap id="userMap" type="com.bjpowernode.entity.User">
+        <id     column="uid"      property="id"      />
+        <result column="username" property="username"/>
+        <!--角色信息-->
+        <collection property="roles" javaType="list" ofType="com.bjpowernode.entity.Role">
+            <id     column="id"    property="id"  />
+            <result column="rname" property="name"/>
+        </collection>
+    </resultMap>
+    
+    <select id="findRolesByUsername" resultMap="userMap">
+        SELECT u.id uid,u.username,u.password,r.id,r.name rname
+        FROM t_user u
+        LEFT JOIN t_user_role ur ON u.id=ur.userid
+        LEFT JOIN t_role r ON r.id=ur.roleid
+        WHERE u.username = #{username};
+    </select>
+
+    <select id="findPermsByRoleId" resultType="com.bjpowernode.entity.Perms">
+        SELECT  p.id ,p.name ,p.url,r.name
+        FROM t_role r
+        LEFT JOIN t_role_perms rp ON r.id=rp.roleid
+        LEFT JOIN t_perms p ON rp.permsid=p.id
+        WHERE r.id=#{id};
+    </select>
+</mapper>
